@@ -1,46 +1,79 @@
-# Bendahara Sekolah
+<div align="center">
+  <img src="src-tauri/icons/icon.png" alt="Ikon Bendahara Sekolah" width="88" height="88">
+  <h1>Bendahara Sekolah</h1>
+  <p><strong>Pembukuan sekolah yang sederhana, rapi, dan tersimpan di perangkat.</strong></p>
+  <p>
+    <img alt="Tauri 2" src="https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white">
+    <img alt="Svelte 5" src="https://img.shields.io/badge/Svelte-5-FF3E00?logo=svelte&logoColor=white">
+    <img alt="Rust" src="https://img.shields.io/badge/Rust-backend-000000?logo=rust&logoColor=white">
+    <img alt="SQLite" src="https://img.shields.io/badge/SQLite-local%20database-003B57?logo=sqlite&logoColor=white">
+  </p>
+  <p>Aplikasi desktop untuk membantu bendahara sekolah mencatat siswa dan transaksi keuangan tanpa layanan cloud.</p>
+</div>
 
-Aplikasi desktop offline untuk mencatat data siswa, pemasukan, pengeluaran, rekap, ekspor, dan backup. Data disimpan lokal dalam SQLite; nominal Rupiah menggunakan bilangan bulat dan aturan keuangan dijalankan di Rust.
+> **Status:** versi pengembangan `0.1.0`. Validasi installer Windows masih mengikuti hasil workflow GitHub Actions.
 
-## Pengembangan di Arch Linux
+## ✨ Yang bisa dilakukan
 
-Pasang Node.js, pnpm, Rust (stable), serta paket desktop Tauri untuk WebKitGTK/GTK, librsvg, patchelf, dan build tools dari repositori Arch. Nama paket mengikuti versi Arch yang digunakan.
+| Bagian | Fitur |
+| --- | --- |
+| **Siswa** | Tambah, ubah, cari, saring per kelas, nonaktifkan, dan impor dari Excel `.xlsx` dengan pratinjau. |
+| **Pemasukan** | Catat pembayaran siswa dengan kategori SPP, Pengembangan, Buku, Foto, UIM, Infaq, atau Kegiatan. |
+| **Pengeluaran** | Catat dan ubah pengeluaran sekolah. |
+| **Rekap** | Lihat saldo, pilih rentang tanggal, serta kelompokkan pemasukan berdasarkan kelas dan kategori. |
+| **Berkas** | Ekspor laporan ke CSV atau PDF dan buat cadangan database SQLite. |
+
+Transaksi menyimpan snapshot nama dan kelas siswa. Perubahan data siswa berikutnya tidak mengubah riwayat transaksi yang sudah dicatat. Impor Excel melewati baris tidak valid dan duplikat; pratinjau dan impor dibatasi hingga 1.000 baris data per file.
+
+## 🧰 Teknologi
+
+- **Desktop:** Tauri 2
+- **Backend:** Rust
+- **Antarmuka:** Svelte 5 + TypeScript
+- **Penyimpanan:** SQLite melalui `rusqlite` dengan SQLite yang dibundel
+- **Impor Excel:** `calamine`
+
+## 🚀 Menjalankan untuk pengembangan
+
+Siapkan Node.js, pnpm `12.19.0`, Rust stable, dan dependensi desktop Tauri untuk sistem operasi yang digunakan. Untuk Linux, ikuti [panduan prasyarat resmi Tauri](https://v2.tauri.app/start/prerequisites/).
 
 ```sh
-pnpm install
+pnpm install --frozen-lockfile
 pnpm tauri dev
 ```
 
-Pemeriksaan antarmuka: `pnpm check`. Build frontend: `pnpm build`. Jalankan pemeriksaan Rust dari `src-tauri` dengan `cargo check` setelah dependency Rust tersedia.
+Pemeriksaan frontend dan build produksinya:
 
-Aplikasi menyimpan database di direktori data aplikasi Tauri milik pengguna, dengan nama `bendahara.sqlite`. Database baru dibuat otomatis saat pertama kali dijalankan. Jangan menaruh data dummy pada database pengguna.
+```sh
+pnpm check
+pnpm build
+```
 
-## Fitur yang tersedia
+Pemeriksaan Rust dijalankan dari folder `src-tauri`:
 
-- Ringkasan saldo dari seluruh transaksi tersimpan.
-- CRUD siswa, filter kelas/nama, dan penonaktifan tanpa menghapus riwayat.
-- Impor XLSX dengan pemilihan sheet/kolom dan pratinjau sebelum simpan; duplikat dilewati dan dilaporkan sebagai gagal.
-- Pencatatan pemasukan memakai daftar kategori tetap: SPP, Pengembangan, Buku, Foto, UIM, Infaq, Kegiatan.
-- Pencatatan dan perubahan pengeluaran.
-- Rekap rentang tanggal, ekspor CSV/PDF, dan backup SQLite.
+```sh
+cargo fmt --check
+cargo check --locked
+cargo test --locked
+```
 
-## Backup dan akses database
+## 💾 Penyimpanan dan cadangan
 
-Gunakan tombol **Simpan cadangan database** di aplikasi agar SQLite membuat salinan konsisten. Backup dapat disimpan di lokasi pilihan pengguna. Database aktif ada di folder data aplikasi Tauri untuk sistem operasi tersebut; lokasi tepatnya berbeda antara Linux dan Windows. Hindari menyalin file database aktif secara manual saat aplikasi sedang berjalan.
+Database `bendahara.sqlite` dibuat otomatis di direktori data aplikasi milik pengguna. Lokasinya mengikuti sistem operasi dan tidak berada di folder instalasi. Jangan gunakan database aktif untuk uji coba yang mengubah atau menghapus data.
 
-## Build Windows
+Gunakan tombol **Simpan cadangan database** untuk membuat salinan SQLite yang konsisten. Simpan cadangan di lokasi aman. Aplikasi belum menyediakan fitur pemulihan dari antarmuka; pemulihan manual perlu dilakukan saat aplikasi tertutup.
 
-Build Windows dilakukan di Windows, bukan cross-compile dari Linux:
+## 🪟 Build Windows
 
-1. Pasang Node.js, pnpm, dan Rust stable.
-2. Clone repository, lalu jalankan `pnpm install`.
-3. Jalankan `pnpm tauri build`.
-4. Installer NSIS/MSI tersedia di `src-tauri/target/release/bundle/`.
+Workflow [Windows build](.github/workflows/windows.yml) berjalan saat ada push ke `main` atau dapat dijalankan manual dari tab **Actions** di GitHub. Runner Windows membangun kedua format installer dan memeriksa bahwa keduanya tersedia:
 
-Workflow `.github/workflows/windows.yml` membangun installer pada Windows runner setiap push ke branch utama atau saat dijalankan manual. Hasil build diunggah sebagai artifact. Build Linux tidak membuktikan build Windows berhasil.
+- **NSIS:** file `.exe` di `src-tauri/target/release/bundle/nsis/`
+- **MSI:** file `.msi` di `src-tauri/target/release/bundle/msi/`
 
-## Catatan status dan hal yang perlu dilanjutkan
+Setelah workflow sukses, unduh artifact **`bendahara-sekolah-windows-installers`** dari halaman run. Installer menggunakan WebView2 bootstrapper: pada komputer yang belum memiliki WebView2, instalasi runtime memerlukan koneksi internet. Lihat [opsi distribusi WebView2 Tauri](https://v2.tauri.app/distribute/windows-installer/#webview2-installation-options).
 
-Ini masih versi pengembangan, bukan rilis final. Modul transport dan tipe frontend sudah dipisahkan, tetapi halaman fitur masih terkumpul di `src/App.svelte`; pemecahan menjadi komponen per halaman belum selesai. Daftar transaksi juga masih dimuat sekaligus, sehingga pagination perlu ditambahkan sebelum pemakaian pada data besar. Ekspor PDF saat ini berupa laporan teks sederhana dan perlu diuji pada laporan panjang.
+Build Linux tidak menghasilkan installer Windows. Keberhasilan workflow dan keberadaan artifact harus diverifikasi sebelum installer dibagikan.
 
-Perlu uji pengguna untuk CRUD, impor dengan variasi file nyata, pemulihan dari backup, ekspor CSV/PDF, serta validasi installer Windows sebelum distribusi. Dependency belum dikunci dalam `pnpm-lock.yaml`. Pemeriksaan build di lingkungan ini tertunda: dependency Rust `calamine` tidak tersedia di cache offline dan akses crates.io gagal.
+## 🛡️ Data lokal
+
+`.gitignore` mengecualikan database dan backup lokal, file environment/credential, dependensi, skema Tauri yang dihasilkan, serta hasil build. Jangan menambahkan token, kata sandi, atau data keuangan nyata ke repository.
