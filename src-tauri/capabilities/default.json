@@ -1,0 +1,1 @@
+{"identifier":"default","description":"Default permissions for the Bendahara application","windows":["main"],"permissions":["core:default","dialog:allow-open","dialog:allow-save"]}

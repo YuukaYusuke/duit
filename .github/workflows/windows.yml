@@ -1,0 +1,41 @@
+name: Windows build
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: windows-2025
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.99.1
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Tauri installers
+        run: pnpm tauri build --ci
+      - name: Verify Windows installer outputs
+        shell: pwsh
+        run: |
+          $nsis = Get-ChildItem "src-tauri/target/release/bundle/nsis" -Filter "*.exe" -File -ErrorAction SilentlyContinue
+          $msi = Get-ChildItem "src-tauri/target/release/bundle/msi" -Filter "*.msi" -File -ErrorAction SilentlyContinue
+          if (-not $nsis) { throw "Tauri did not produce an NSIS .exe installer." }
+          if (-not $msi) { throw "Tauri did not produce an MSI installer." }
+          $nsis | ForEach-Object { Write-Host "NSIS: $($_.FullName)" }
+          $msi | ForEach-Object { Write-Host "MSI: $($_.FullName)" }
+      - name: Upload installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: bendahara-sekolah-windows-installers
+          path: |
+            src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/release/bundle/msi/*.msi
+          if-no-files-found: error

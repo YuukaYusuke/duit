@@ -1,0 +1,13 @@
+PRAGMA foreign_keys = ON;
+CREATE TABLE IF NOT EXISTS classes(id INTEGER PRIMARY KEY, name TEXT NOT NULL UNIQUE);
+CREATE TABLE IF NOT EXISTS payment_types(id INTEGER PRIMARY KEY, name TEXT NOT NULL UNIQUE);
+CREATE TABLE IF NOT EXISTS students(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, class_id INTEGER NOT NULL REFERENCES classes(id), active INTEGER NOT NULL DEFAULT 1 CHECK(active IN (0,1)), created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX IF NOT EXISTS idx_students_name ON students(name COLLATE NOCASE);
+CREATE INDEX IF NOT EXISTS idx_students_class ON students(class_id, active);
+CREATE TABLE IF NOT EXISTS incomes(id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT NOT NULL, student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE RESTRICT, student_name TEXT NOT NULL, class_name TEXT NOT NULL, amount INTEGER NOT NULL CHECK(amount > 0), payment_type_id INTEGER NOT NULL REFERENCES payment_types(id), payment_type TEXT NOT NULL, note TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX IF NOT EXISTS idx_incomes_date ON incomes(date);
+CREATE INDEX IF NOT EXISTS idx_incomes_student ON incomes(student_id);
+CREATE TABLE IF NOT EXISTS expenses(id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT NOT NULL, amount INTEGER NOT NULL CHECK(amount > 0), note TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(date);
+INSERT OR IGNORE INTO classes(name) VALUES ('An Naas'),('Al Ikhlas'),('Al Kautsar'),('An Nahl'),('An-Nisa');
+INSERT OR IGNORE INTO payment_types(name) VALUES ('SPP'),('Pengembangan'),('Buku'),('Foto'),('UIM'),('Infaq'),('Kegiatan');
